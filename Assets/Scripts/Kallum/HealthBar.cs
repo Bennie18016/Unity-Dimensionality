@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using Photon.Pun;
 
 public class HealthBar : MonoBehaviour
 {
@@ -14,8 +15,10 @@ public class HealthBar : MonoBehaviour
         slider.value = health;
     }
 
-    public void SetHealth(float health)
+    public void SetHealth(float health, PhotonView PV)
     {
-        slider.value = health;
+        if(PV.IsMine){
+            slider.value = health;
+        }
     }
 }

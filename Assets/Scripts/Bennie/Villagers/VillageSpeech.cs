@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using PlayerController;
+using Photon.Pun;
 
 namespace Villager
 {
@@ -44,7 +45,7 @@ namespace Villager
         // Update is called once per frame
         void Update()
         {
-            if (DistanceFromVillager(ClosestPlayer()) < reach && !speaking)
+            if (DistanceFromVillager(ClosestPlayer()) < reach && !speaking && ClosestPlayer().GetComponent<PhotonView>().IsMine)
             {
                 text.SetActive(true);
                 if (Input.GetKeyDown(KeyCode.F))

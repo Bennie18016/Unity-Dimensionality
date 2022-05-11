@@ -53,7 +53,7 @@ namespace Abilities
 
             if (active && lastTimeManipulate > 15)
             {
-                ReturnNormal();
+                PV.RPC("ReturnNormal", RpcTarget.AllBuffered);
             }
 
             if (active)

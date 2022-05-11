@@ -53,6 +53,12 @@ MonoBehaviour:
   - BuildStageRock
   - BuildStageRope
   - BuildStageWood
+  - DisableDisabled
+  - NewDisabled
+  - ResetDisabled
+  - ResetTime
+  - AddTime
+  - HostCheck
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 1

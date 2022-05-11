@@ -1,16 +1,18 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using Photon.Pun;
 public class PlayerHealth : MonoBehaviour
 {
     public float maxHealth;
     public float currentHealth;
 
+    PhotonView PV;
     public HealthBar healthBar;
 
     void Start()
     {
+        PV = GetComponent<PhotonView>();
 
         currentHealth = maxHealth;
         healthBar = GameObject.FindGameObjectWithTag("health bar").GetComponent<HealthBar>();
@@ -34,12 +36,12 @@ public class PlayerHealth : MonoBehaviour
     public void TakeDamage(int damage)
     {
         currentHealth -= damage;
-        healthBar.SetHealth(currentHealth);
+        healthBar.SetHealth(currentHealth, PV);
         checkHealth();
     }
 
     public void MaxHealth(){
         currentHealth = maxHealth;
-        healthBar.SetHealth(currentHealth);
+        healthBar.SetHealth(currentHealth, PV);
     }
 }

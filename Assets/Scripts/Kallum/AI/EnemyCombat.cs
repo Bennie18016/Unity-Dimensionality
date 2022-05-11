@@ -10,6 +10,8 @@ public class EnemyCombat : EnemyPattern
     public float dist;
     GameObject plyrObj;
 
+    GameObject stockOBJ;
+    GameObject enemyObj;
     float lastAttack;
     float attackCool;
 
@@ -24,29 +26,63 @@ public class EnemyCombat : EnemyPattern
 
     void Update()
     {
+        if (gameObject.GetComponent<EnemyPattern>().stockholm)
+        {
+            StockholmAttack();
+        }
+        else
+        {
+            AttackPlayer();
+            AttackStock();
+        }
+
+
+        lastAttack += 1 * Time.deltaTime;
+    }
+
+    private void StockholmAttack()
+    {
+        if (lastAttack > attackCool)
+        {
+            enemyObj = ClosestEnemy();
+
+            if (DistanceFromTarget(enemyObj) < attackDistance)
+            {
+                enemyObj.GetComponent<EnemyStat>().TakeDamage(damage);
+                lastAttack = 0;
+            }
+        }
+    }
+
+    private void AttackPlayer()
+    {
         if (lastAttack > attackCool)
         {
             plyrObj = ClosestPlayer();
 
-            if (DistanceFromPlayer(plyrObj) < attackDistance)
+            if (DistanceFromTarget(plyrObj) < attackDistance)
             {
                 plyrObj.GetComponent<PlayerHealth>().TakeDamage(damage);
                 lastAttack = 0;
             }
         }
-        lastAttack += 1 * Time.deltaTime;
     }
 
-    private bool InRadius()
+    private void AttackStock()
     {
-        if (DistanceFromPlayer(plyrObj) < attackDistance)
+        if (lastAttack > attackCool)
         {
-            return true;
+            stockOBJ = ClosestEnemy();
+
+            if (DistanceFromTarget(stockOBJ) < attackDistance && stockOBJ.GetComponent<EnemyPattern>().stockholm)
+            {
+                stockOBJ.GetComponent<EnemyStat>().TakeDamage(damage);
+                lastAttack = 0;
+            }
         }
-        return false;
     }
 
-    private float DistanceFromPlayer(GameObject target)
+    private float DistanceFromTarget(GameObject target)
     {
         return Vector3.Distance(target.transform.position, transform.position);
     }
@@ -71,4 +107,27 @@ public class EnemyCombat : EnemyPattern
         }
         return closest;
     }
+
+    private GameObject ClosestEnemy()
+    {
+        GameObject[] targets = GameObject.FindGameObjectsWithTag("Enemy");
+
+        GameObject closest = null;
+        float distance = Mathf.Infinity;
+        Vector3 enemyPos = transform.position;
+
+        foreach (GameObject target in targets)
+        {
+            if (target == gameObject) continue;
+            Vector3 diff = target.transform.position - enemyPos;
+            float curDistance = diff.sqrMagnitude;
+            if (curDistance < distance)
+            {
+                closest = target;
+                distance = curDistance;
+            }
+        }
+        return closest;
+    }
+
 }

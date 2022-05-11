@@ -11,7 +11,7 @@ namespace AI
     {
         private NavMeshAgent enemy;
         public Transform go;
-        private bool stockholm;
+        public bool stockholm;
         float chaseDistance = 10f;
 
         float shadowChaseDistance = 2f;
@@ -45,6 +45,14 @@ namespace AI
                 go = ClosestPlayer().transform;
                 MoveEnemy(go.transform.position);
                 return;
+            }
+
+            if(ChaseEnemy() && !stockholm){
+                if(ClosestEnemy().GetComponent<EnemyPattern>().stockholm){
+                    go = ClosestEnemy().transform;
+                    MoveEnemy(go.transform.position);
+                    return;
+                }
             }
 
             if (ChasePlayer())

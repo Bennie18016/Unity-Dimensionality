@@ -31,6 +31,7 @@ namespace Abilities{
             if(hit.collider.tag == "Enemy")
             {
                 hit.transform.gameObject.GetComponent<EnemyPattern>().Stockholm();
+                hit.transform.gameObject.GetComponent<EnemyCombat>().Stockholm();
             }
         }
 

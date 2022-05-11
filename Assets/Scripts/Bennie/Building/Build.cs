@@ -7,7 +7,6 @@ using Photon.Pun;
 
 public class Build : MonoBehaviour
 {
-    GameObject text;
     GameObject buildText;
     GameObject woodText;
     GameObject ropeText;
@@ -26,6 +25,7 @@ public class Build : MonoBehaviour
     public Material finishMaterial;
 
     public bool tutorial;
+    public bool boss;
 
     void Start()
     {
@@ -37,27 +37,25 @@ public class Build : MonoBehaviour
         ropeText.SetActive(false);
         rockText = createText("RockText", null, new Vector3(0, -120, 0));
         rockText.SetActive(false);
-        text.SetActive(false);
 
         reach = 5f;
     }
 
     private GameObject createText(string name, string speech, Vector3 position)
     {
-        text = PhotonNetwork.Instantiate("GameObject", Vector3.zero, Quaternion.identity);
-        text.name = name + " text";
-        text.AddComponent<Text>();
-        text.GetComponent<Text>().text = speech;
-        text.GetComponent<Text>().font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+        GameObject gameOBJ = new GameObject();
+        gameOBJ.name = name + " text";
+        gameOBJ.AddComponent<Text>();
+        gameOBJ.GetComponent<Text>().text = speech;
+        gameOBJ.GetComponent<Text>().font = Resources.GetBuiltinResource<Font>("Arial.ttf");
         GameObject c = GameObject.Find("Canvas");
-        text.transform.SetParent(c.transform);
-        RectTransform transform = text.GetComponent<RectTransform>();
+        gameOBJ.transform.SetParent(c.transform);
+        RectTransform transform = gameOBJ.GetComponent<RectTransform>();
         transform.anchoredPosition = position;
         transform.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 160);
         transform.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, 30);
-        text.SetActive(false);
 
-        return text;
+        return gameOBJ;
     }
 
     // Update is called once per frame
@@ -73,7 +71,7 @@ public class Build : MonoBehaviour
     {
         if (wood.Length == woodStage && rope.Length == ropeStage && rock.Length == rockStage)
         {
-            GetComponent<PhotonView>().RPC("Done", RpcTarget.All);
+            gameObject.GetComponent<PhotonView>().RPC("Done", RpcTarget.AllBuffered);
         }
     }
 
@@ -99,12 +97,12 @@ public class Build : MonoBehaviour
                 }
             }
         }
-        if (DistanceFromBuild(ClosestPlayer()) > reach && !done && ClosestPlayer().GetComponent<PhotonView>().IsMine)
+        else
         {
             buildText.SetActive(false);
             if (woodText != null) { woodText.SetActive(false); }
-            if (woodText != null) { woodText.SetActive(false); }
-            if (woodText != null) { woodText.SetActive(false); }
+            if (ropeText != null) { ropeText.SetActive(false); }
+            if (rockText != null) { rockText.SetActive(false); }
         }
     }
 
@@ -116,7 +114,7 @@ public class Build : MonoBehaviour
         }
         else if (woodStage == wood.Length && woodText != null)
         {
-            PhotonNetwork.Destroy(woodText);
+            Destroy(woodText);
         }
 
         if (ropeStage < rope.Length && ropeText != null)
@@ -125,7 +123,7 @@ public class Build : MonoBehaviour
         }
         else if (ropeStage == rope.Length && ropeText != null)
         {
-            PhotonNetwork.Destroy(ropeText);
+            Destroy(ropeText);
         }
 
         if (rockStage < rock.Length && rockText != null)
@@ -134,7 +132,7 @@ public class Build : MonoBehaviour
         }
         else if (rockStage == rock.Length && rockText != null)
         {
-            PhotonNetwork.Destroy(rockText);
+            Destroy(rockText);
         }
     }
 
@@ -210,19 +208,27 @@ public class Build : MonoBehaviour
     [PunRPC]
     private void Done()
     {
-        if (woodStage == wood.Length && ropeStage == rope.Length && rockStage == rock.Length)
+        if (!done)
         {
+            if (woodText != null) { woodText.SetActive(false); }
+            if (rockText != null) { rockText.SetActive(false); }
+            if (ropeText != null) { ropeText.SetActive(false); }
+            buildText.SetActive(false);
+            gameObject.AddComponent<MeshCollider>();
+            gameObject.GetComponent<MeshRenderer>().material = finishMaterial;
+            gameObject.AddComponent<BoxCollider>().isTrigger = enabled;
+            if (tutorial) { gameObject.AddComponent<TutorialSail>(); }
+            if (boss) { gameObject.AddComponent<BossSail>(); }
             done = true;
+            StartCoroutine(delete());
         }
 
-        if (done)
-        {
-            gameObject.AddComponent<MeshCollider>();
-            PhotonNetwork.Destroy(buildText);
-            gameObject.GetComponent<MeshRenderer>().material = finishMaterial;
-            if (tutorial) { gameObject.AddComponent<TutorialSail>(); gameObject.AddComponent<BoxCollider>().isTrigger = enabled; }
-            Destroy(this);
-        }
+    }
+
+    IEnumerator delete()
+    {
+        yield return new WaitForSeconds(3);
+        Destroy(this);
     }
 
     private GameObject ClosestPlayer()
@@ -246,8 +252,17 @@ public class Build : MonoBehaviour
         return closest;
     }
 
+
     private float DistanceFromBuild(GameObject player)
     {
         return Vector3.Distance(player.transform.position, transform.position);
+    }
+
+        private float DistanceFromBuild(GameObject[] players)
+    {
+        foreach(GameObject player in players){
+            return Vector3.Distance(player.transform.position, transform.position);
+        }
+        return 0;
     }
 }
